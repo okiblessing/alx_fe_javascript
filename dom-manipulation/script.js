@@ -137,7 +137,20 @@ function importFromJsonFile(event) {
 }
 
 // Event listener for "Show New Quote" button
-document.getElementById('newQuote').addEventListener('click', () => filterQuotes());
+document.getElementById('newQuote').addEventListener('click', () => {
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    const filteredQuotes = selectedCategory === 'all' ? quotes : quotes.filter(quote => quote.category === selectedCategory);
+    
+    // Show a random quote from the filtered list
+    if (filteredQuotes.length > 0) {
+        const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+        const quote = filteredQuotes[randomIndex];
+        const quoteDisplay = document.getElementById('quoteDisplay');
+        quoteDisplay.innerHTML = `"${quote.text}" - <strong>${quote.category}</strong>`;
+    } else {
+        document.getElementById('quoteDisplay').innerHTML = "No quotes available for this category.";
+    }
+});
 
 // Initial load of quotes from local storage
 loadQuotes();
