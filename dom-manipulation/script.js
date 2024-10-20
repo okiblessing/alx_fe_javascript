@@ -183,4 +183,4 @@ filterQuotes();
 createAddQuoteForm(); 
 
 // Periodically fetch server quotes
-setInterval(fetchServerQuotes, 10000); // Check for updates every 10 seconds
+setInterval(fetchQuotesFromServer, 10000); // Check for updates every 10 seconds
