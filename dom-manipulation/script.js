@@ -1,6 +1,4 @@
 let quotes = [];
-
-// Simulated server data (mock API)
 const mockApiUrl = 'https://jsonplaceholder.typicode.com/posts';
 
 // Load quotes from local storage
@@ -16,7 +14,7 @@ function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Function to fetch quotes from the simulated server
+// Fetch quotes from the simulated server
 async function fetchQuotesFromServer() {
     try {
         const response = await fetch(mockApiUrl);
@@ -25,20 +23,44 @@ async function fetchQuotesFromServer() {
         // Process the fetched data to extract necessary fields
         const formattedQuotes = serverQuotes.map(post => ({
             text: post.body,
-            category: 'General' // Assuming all posts are categorized as 'General'
+            category: 'General' // Default category
         }));
 
-        // Merge new quotes with local quotes
-        let newQuotes = formattedQuotes.filter(serverQuote => !quotes.some(quote => quote.text === serverQuote.text));
-        if (newQuotes.length > 0) {
-            quotes.push(...newQuotes);
-            saveQuotes();
-            notifyUser(`${newQuotes.length} new quotes added from server!`);
-            filterQuotes();
-        }
+        // Check for new quotes and handle conflicts
+        handleQuotesFromServer(formattedQuotes);
     } catch (error) {
         console.error('Error fetching quotes from server:', error);
     }
+}
+
+// Handle quotes received from the server
+function handleQuotesFromServer(serverQuotes) {
+    const newQuotes = [];
+    const updatedQuotes = [];
+
+    serverQuotes.forEach(serverQuote => {
+        const existingQuote = quotes.find(quote => quote.text === serverQuote.text);
+        if (!existingQuote) {
+            newQuotes.push(serverQuote);
+        } else if (existingQuote.category !== serverQuote.category) {
+            // Conflict detected
+            updatedQuotes.push(serverQuote);
+            // Choose server data (you can implement more complex logic here)
+            quotes = quotes.map(quote => quote.text === serverQuote.text ? serverQuote : quote);
+        }
+    });
+
+    // Add new quotes to local storage
+    if (newQuotes.length > 0) {
+        quotes.push(...newQuotes);
+        notifyUser(`${newQuotes.length} new quotes added from server!`);
+    }
+    if (updatedQuotes.length > 0) {
+        notifyUser(`${updatedQuotes.length} quotes updated from server!`);
+    }
+
+    saveQuotes();
+    filterQuotes();
 }
 
 // Notify user about updates
@@ -130,42 +152,6 @@ function createAddQuoteForm() {
     formContainer.appendChild(quoteInput);
     formContainer.appendChild(categoryInput);
     formContainer.appendChild(addButton);
-}
-
-// Export quotes as JSON
-function exportToJson() {
-    const jsonString = JSON.stringify(quotes, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'quotes.json';
-    a.click();
-    
-    URL.revokeObjectURL(url);
-}
-
-// Import quotes from a JSON file
-function importFromJsonFile(event) {
-    const fileReader = new FileReader();
-    fileReader.onload = function(event) {
-        try {
-            const importedQuotes = JSON.parse(event.target.result);
-            if (Array.isArray(importedQuotes)) {
-                quotes.push(...importedQuotes);
-                saveQuotes();
-                alert('Quotes imported successfully!');
-                populateCategories();
-                filterQuotes();
-            } else {
-                alert('Invalid file format. Please upload a valid JSON file.');
-            }
-        } catch (e) {
-            alert('Error reading the file: ' + e.message);
-        }
-    };
-    fileReader.readAsText(event.target.files[0]);
 }
 
 // Event listener for "Show New Quote" button
