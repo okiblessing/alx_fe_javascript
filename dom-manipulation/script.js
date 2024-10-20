@@ -159,6 +159,11 @@ async function postQuoteToServer(quote) {
     }
 }
 
+// Function to sync local quotes with the server
+async function syncQuotes() {
+    await fetchQuotesFromServer(); // Fetch updates from server
+}
+
 // Function to create the add quote form dynamically
 function createAddQuoteForm() {
     const formContainer = document.getElementById('quoteFormContainer');
@@ -203,5 +208,5 @@ populateCategories();
 filterQuotes(); 
 createAddQuoteForm(); 
 
-// Periodically fetch server quotes
-setInterval(fetchQuotesFromServer, 10000); // Check for updates every 10 seconds
+// Periodically sync quotes with the server
+setInterval(syncQuotes, 10000); // Check for updates every 10 seconds
