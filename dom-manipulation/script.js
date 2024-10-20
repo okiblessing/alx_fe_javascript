@@ -30,6 +30,7 @@ async function fetchQuotesFromServer() {
         handleQuotesFromServer(formattedQuotes);
     } catch (error) {
         console.error('Error fetching quotes from server:', error);
+        notifyUser('Error fetching quotes from server.');
     }
 }
 
@@ -56,6 +57,8 @@ function handleQuotesFromServer(serverQuotes) {
     }
     if (updatedQuotes.length > 0) {
         notifyUser(`${updatedQuotes.length} quotes updated from server!`);
+    } else {
+        notifyUser('Quotes synced with server!');
     }
 
     saveQuotes();
@@ -66,7 +69,7 @@ function handleQuotesFromServer(serverQuotes) {
 function notifyUser(message) {
     const notification = document.getElementById('notification');
     notification.innerText = message;
-    setTimeout(() => notification.innerText = '', 3000); // Clear after 3 seconds
+    setTimeout(() => notification.innerText = '', 5000); // Clear after 5 seconds
 }
 
 // Populate categories dynamically
@@ -156,6 +159,7 @@ async function postQuoteToServer(quote) {
         console.log('Quote posted successfully:', serverResponse);
     } catch (error) {
         console.error('Error posting quote to server:', error);
+        notifyUser('Error posting quote to server.');
     }
 }
 
