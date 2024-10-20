@@ -45,7 +45,6 @@ function handleQuotesFromServer(serverQuotes) {
         } else if (existingQuote.category !== serverQuote.category) {
             // Conflict detected
             updatedQuotes.push(serverQuote);
-            // Choose server data (you can implement more complex logic here)
             quotes = quotes.map(quote => quote.text === serverQuote.text ? serverQuote : quote);
         }
     });
@@ -113,21 +112,50 @@ function displayQuotes(quotesToDisplay) {
 }
 
 // Function to add a new quote
-function addQuote() {
+async function addQuote() {
     const quoteText = document.getElementById('newQuoteText').value.trim();
     const quoteCategory = document.getElementById('newQuoteCategory').value.trim();
 
     if (quoteText && quoteCategory) {
-        quotes.push({ text: quoteText, category: quoteCategory });
+        const newQuote = { text: quoteText, category: quoteCategory };
+        quotes.push(newQuote);
         saveQuotes();
         document.getElementById('newQuoteText').value = '';
         document.getElementById('newQuoteCategory').value = '';
         alert('Quote added successfully!');
 
+        // Post new quote to the server
+        await postQuoteToServer(newQuote);
+
         populateCategories();
         filterQuotes();
     } else {
         alert('Please enter both a quote and a category.');
+    }
+}
+
+// Function to post a new quote to the server
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(mockApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                body: quote.text,
+                title: quote.category // Using category as title for mock API
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to post quote to server');
+        }
+
+        const serverResponse = await response.json();
+        console.log('Quote posted successfully:', serverResponse);
+    } catch (error) {
+        console.error('Error posting quote to server:', error);
     }
 }
 
