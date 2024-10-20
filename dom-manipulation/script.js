@@ -1,10 +1,7 @@
 let quotes = [];
 
 // Simulated server data (mock API)
-const serverQuotes = [
-    { text: "The only limit to our realization of tomorrow is our doubts of today.", category: "Inspiration" },
-    { text: "Do what you can, with what you have, where you are.", category: "Motivation" },
-];
+const mockApiUrl = 'https://jsonplaceholder.typicode.com/posts';
 
 // Load quotes from local storage
 function loadQuotes() {
@@ -20,18 +17,28 @@ function saveQuotes() {
 }
 
 // Function to fetch quotes from the simulated server
-function fetchServerQuotes() {
-    // Simulate a delay for server response
-    setTimeout(() => {
-        // Merge server data with local data
-        let newQuotes = serverQuotes.filter(serverQuote => !quotes.some(quote => quote.text === serverQuote.text));
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch(mockApiUrl);
+        const serverQuotes = await response.json();
+
+        // Process the fetched data to extract necessary fields
+        const formattedQuotes = serverQuotes.map(post => ({
+            text: post.body,
+            category: 'General' // Assuming all posts are categorized as 'General'
+        }));
+
+        // Merge new quotes with local quotes
+        let newQuotes = formattedQuotes.filter(serverQuote => !quotes.some(quote => quote.text === serverQuote.text));
         if (newQuotes.length > 0) {
             quotes.push(...newQuotes);
             saveQuotes();
             notifyUser(`${newQuotes.length} new quotes added from server!`);
             filterQuotes();
         }
-    }, 1000);
+    } catch (error) {
+        console.error('Error fetching quotes from server:', error);
+    }
 }
 
 // Notify user about updates
